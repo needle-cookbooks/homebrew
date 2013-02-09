@@ -6,6 +6,7 @@ remote_file homebrew_go do
 end
 
 execute homebrew_go do
+  user RunAs.unprivileged(node['homebrew']['run_as'])
   not_if { File.exist? '/usr/local/bin/brew' }
 end
 

@@ -5,6 +5,18 @@ require 'chef/resource/package'
 require 'chef/platform'
 require 'chef/mixin/shell_out'
 
+module RunAs
+  class << self
+    def unprivileged(node_attr=nil)
+      unless (ENV['SUDO_USER'].nil? || ENV['SUDO_USER'] == 'root')
+        node_attr || ENV['SUDO_USER']
+      else
+        raise 'Could not determine a viable non-root user for executing homebrew.'
+      end
+    end
+  end
+end
+
 class Chef
   class Provider
     class Package
@@ -40,7 +52,7 @@ class Chef
 
         protected
         def brew(*args)
-          get_response_from_command("brew #{args.join(' ')}")
+          get_response_from_command("sudo -u #{RunAs.unprivileged(node['homebrew']['run_as'])} brew #{args.join(' ')}")
         end
 
         def current_installed_version
